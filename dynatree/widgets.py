@@ -63,19 +63,23 @@ class DynatreeWidget(SelectMultiple):
         if value is None:
             value = []
         has_id = attrs and 'id' in attrs
+        id = attrs['id']
         final_attrs = self.build_attrs(attrs, name=name)
+        output = []
+        out = output.append
+        out('<input type="hidden" name="%(name)s" id="%(id)s"/>' % dict(name=name, id=id))
         if has_id:
-            output = [u'<div id="%s"></div>' % attrs['id']]
+            out(u'<div id="%s_div"></div>' % id)
         else:
-            output = [u'<div></div>']
+            out(u'<div></div>')
         if has_id:
-            output.append(u'<ul class="dynatree_checkboxes" id="%s_checkboxes">' % attrs['id'])
+            out(u'<ul class="dynatree_checkboxes" id="%s_checkboxes">' % id)
         else:
-            output.append(u'<ul class="dynatree_checkboxes">')
+            out(u'<ul class="dynatree_checkboxes">')
         str_values = set([force_unicode(v) for v in value])
         for i, (option_value, option_label) in enumerate(chain(self.choices, choices)):
             if has_id:
-                final_attrs = dict(final_attrs, id='%s_%s' % (attrs['id'], option_value))
+                final_attrs = dict(final_attrs, id='%s_%s' % (id, option_value))
                 label_for = u' for="%s"' % final_attrs['id']
             else:
                 label_for = ''
@@ -91,13 +95,13 @@ class DynatreeWidget(SelectMultiple):
         output.append(u'<script type="text/javascript">')
         if has_id:
             output.append(u'var dynatree_data_%s = %s;' % (
-                attrs['id'],
+                id,
                 json.dumps(get_tree(self.queryset, str_values))
             ))
             output.append(
                 """
                 $(function() {
-                    $("#%(id)s").dynatree({
+                    $("#%(id)s_div").dynatree({
                         checkbox: true,
                         selectMode: %(select_mode)d,
                         children: dynatree_data_%(id)s,
@@ -105,10 +109,12 @@ class DynatreeWidget(SelectMultiple):
                         onSelect: function(select, node) {
                             $('#%(id)s_checkboxes').find('input[type=checkbox]').removeAttr('checked');
                             var selNodes = node.tree.getSelectedNodes();
+                            $('#%(id)s').val("")
                             var selKeys = $.map(selNodes, function(node){
                                    $('#%(id)s_' + (node.data.key)).attr('checked', 'checked');
                                    return node.data.key;
                             });
+                            $('#%(id)s').val(selKeys.join(","))
                         },
                         onClick: function(node, event) {
                             if( node.getEventTargetType(event) == "title" )
@@ -123,7 +129,7 @@ class DynatreeWidget(SelectMultiple):
                     });
                 });
                 """ % {
-                    'id': attrs['id'],
+                    'id': id,
                     'debug': settings.DEBUG and 1 or 0,
                     'select_mode': self.select_mode,
                 }
