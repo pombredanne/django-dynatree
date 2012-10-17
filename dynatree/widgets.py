@@ -67,7 +67,7 @@ class DynatreeWidget(SelectMultiple):
         final_attrs = self.build_attrs(attrs, name=name)
         output = []
         out = output.append
-        out('<input type="hidden" name="%(name)s" id="%(id)s"/>' % dict(name=name, id=id))
+        out('<input type="hidden" name="%(name)s" id="%(id)s" value="%(value)s"/>' % dict(name=name, id=id, value=value))
         if has_id:
             out(u'<div id="%s_div"></div>' % id)
         else:
@@ -114,7 +114,7 @@ class DynatreeWidget(SelectMultiple):
                                    $('#%(id)s_' + (node.data.key)).attr('checked', 'checked');
                                    return node.data.key;
                             });
-                            $('#%(id)s').val(selKeys.join(","))
+                            $('#%(id)s').val("["+selKeys.join(", ")+"]")
                         },
                         onClick: function(node, event) {
                             if( node.getEventTargetType(event) == "title" )
